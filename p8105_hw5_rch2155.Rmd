@@ -27,7 +27,9 @@ scale_fill_discrete = scale_fill_viridis_d
 
 ## Problem 1
 
+The raw data on homicides in US cities from the Washington Post includes information on homicide cases, including names of individuals killed, the name of the city and state, the coordinates of the homicide, date of report, and what the disposition was for each case. There is also an id variable for the case.
 
+The following code creates a `city_state` variable and determines the number of unsolved and solved homicides within cities depending on disposition.
 
 ```{r}
 homicide_df =
@@ -45,6 +47,7 @@ homicide_df =
 ```
 
 
+The following code chunks filter the data down to the homicides that are unsolved and run a proportion test to determine the proportion of homicides that are unsolved in Baltimore, MD specifically.
 
 ```{r}
 aggregate_df =
@@ -56,8 +59,6 @@ aggregate_df =
   )
 ```
 
-
-
 ```{r}
 prop.test(
   aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_unsolved),
@@ -66,6 +67,7 @@ prop.test(
 ```
 
 
+The following code determines the proportion of unsolved homicides in each city and pulls the confidence interval and the proportion from the data.
 
 ```{r}
 results_df =
@@ -80,6 +82,7 @@ results_df =
 ```
 
 
+The below code chunk creates a plot with the proportion of unsolved homicides and accompanying confidence intervals for each of the cities in the data.
 
 ```{r}
 results_df %>% 
@@ -92,9 +95,10 @@ results_df %>%
 
 
 
-
 ## Problem 2
 
+
+The data used for this problem contains information on individuals separated in the control or the experimental arms of a study. The individual data is contained in separate csv files. The following code brings the files together into one data frame and tidies the resulting data.
 
 ```{r}
 path_df =
@@ -119,6 +123,9 @@ path_df =
   relocate(study_arm)
 ```
 
+
+The following plot uses the data frame created above to display observations on each subject over time. The plot is divided into the control arm and the experimental arm.
+
 ```{r}
 path_df %>% 
   ggplot(aes(x = week, y = observation, color = subject_id)) +
@@ -126,7 +133,7 @@ path_df %>%
   facet_grid(. ~ study_arm)
 ```
 
-
+Drawing from the above plot, the control group appears to have fairly stable observations over time. The experimental group, overall, appears to have increasing observations over time. Both of the study arms appear to start in a similar place with their observations and appear to diverge between weeks 2 and 3. The control group overall dips much lower than the experimental group ever does as well.  
 
 
 ## Problem 3
@@ -134,7 +141,20 @@ path_df %>%
 
 
 ```{r}
+sim_hyp_test = function(n = 30, mu, sigma = 5){
+  
+  sim_data = 
+    tibble(
+      x = rnorm(n = n, mean = mu, sd = sigma)
+    )
+  
+  sim_data %>% 
+  t.test(., x)
+}
 
+
+
+sim_hyp_test(mu = 0)
 ```
 
 
