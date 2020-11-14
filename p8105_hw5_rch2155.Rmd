@@ -141,20 +141,50 @@ Drawing from the above plot, the control group appears to have fairly stable obs
 
 
 ```{r}
-sim_hyp_test = function(n = 30, mu, sigma = 5){
+sim_hyp_test = function(sampsize = 30, mu, sigma = 5){
   
   sim_data = 
     tibble(
-      x = rnorm(n = n, mean = mu, sd = sigma)
+      x = rnorm(n = sampsize, mean = mu, sd = sigma)
     )
   
   sim_data %>% 
-  t.test(., x)
+    summarize(
+     ttest = broom::tidy(t.test(x)))
 }
 
 
 
-sim_hyp_test(mu = 0)
+
+output = vector("list", 5000)
+
+for (i in 1:5000) {
+  output[[i]] = sim_hyp_test(mu = 0)
+}
+
+sim_results = bind_rows(output)
+
+
+
+sim_results = 
+  tibble(mu = c(0, 1, 2, 3, 4, 5, 6)) %>% 
+  mutate(
+    output_lists = map(.x = mu, ~rerun(5000, sim_hyp_test(mu = .x))),
+    estimate_dfs = map(output_lists, bind_rows)) %>% 
+  select(-output_lists) %>% 
+  unnest(estimate_dfs) %>% 
+  mutate(mu_hat = ttest.estimate)
+
+
+
+sim_results %>% 
+  mutate(
+    
+    prop_reject = 
+  )
+  ggplot(aes(x = mu, y = mu_hat, fill = sample_size)) + 
+  geom_violin()
+
 ```
 
 
