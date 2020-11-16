@@ -98,7 +98,6 @@ results_df %>%
 
 ## Problem 2
 
-
 The data used for this problem contains information on individuals separated in the control or the experimental arms of a study. The individual data is contained in separate csv files. The following code brings the files together into one data frame and tidies the resulting data.
 
 ```{r, message=FALSE}
@@ -139,7 +138,7 @@ Drawing from the above plot, the control group appears to have fairly stable obs
 
 ## Problem 3
 
-In the following code chunk, a function is created in which there is a tibble with a normal distribution created and a ttest function is included to be applied to the following code that uses the funciton.
+In the following code chunk, a function is created in which there is a tibble with a normal distribution created and a `t.test` function is included to be applied to the later code that uses the function.
 
 ```{r}
 sim_hyp_test = function(sampsize = 30, mu, sigma = 5){
@@ -169,7 +168,7 @@ sim_results = bind_rows(output)
 ```
 
 
-The following code uses the function and the simulation that were created and run in the above two code chunks to run another simulation and create a data frame for the ttest function when mu includes the values of 0 through 6. The resulting data frame has 5000 rows for each of the mu values and contains a variable for the estimate of mu for each sample, named `mu_hat` in the data frame.
+The following code uses the function and the simulation that were created and run in the above two code chunks to run another simulation and create a data frame for the `t.test` function when mu includes the values of 0 through 6. The resulting data frame has 5000 rows for each of the mu values and contains a variable for the estimate of mu for each sample, named `mu_hat` in the data frame.
 
 ```{r}
 sim_results = 
@@ -204,7 +203,7 @@ sim_results %>%
 Given the above plot, it can be determined that as the true value of mu increases, the power also increases until mu = 3 and then it plateaus. Therefore, the power of the tests increase until mu = 3 and then remains about the same until starting to decrease slightly at mu = 6.
 
 
-The following code creates to plots and binds them together. The first plot, shown on the left, displays the relationship between the true value of mu and the average estimate of mu. The second plot, shown on the right, displays the relationship between the true value of mu and the average estimate of mu for samples only where the null was rejected.
+The following code creates two plots and binds them together. The first plot, shown on the left, displays the relationship between the true value of mu and the average estimate of mu. The second plot, shown on the right, displays the relationship between the true value of mu and the average estimate of mu for samples only where the null was rejected.
 
 ```{r, message=FALSE}
 average_mu_plot = 
@@ -233,4 +232,4 @@ average_reject_mu_plot =
 average_mu_plot + average_reject_mu_plot
 ```
 
-Given the above plots, it can be determined that the average sample values of mu for only the samples in which the null was rejected (shown on the right) is not exactly the same as the overall average estimates of mu (shown on the left). There are visable deviations from the average estimates when only the samples where the null was rejected were included at mu = 0, 1, 2, and 3.  The average estimates for only the samples where the null is rejected are slightly higher, excluding when mu = 4, 5, and 6.
+Given the above plots, it can be determined that the average sample values of mu for only the samples in which the null was rejected (shown on the right) is not exactly the same as the overall average estimates of mu (shown on the left). There are visible deviations from the average estimates when only the samples where the null was rejected were included at mu = 0, 1, 2, and 3.  The average estimates for only the samples where the null is rejected are slightly higher, excluding when mu = 4, 5, and 6, where the average estimates look about the same on both plots.
