@@ -32,7 +32,7 @@ The raw data on homicides in US cities from the Washington Post includes informa
 
 The following code creates a `city_state` variable and determines the number of unsolved and solved homicides within cities depending on disposition.
 
-```{r}
+```{r, message=FALSE}
 homicide_df =
   read_csv("./hom-data/homicide-data.csv") %>% 
   mutate(
@@ -50,7 +50,7 @@ homicide_df =
 
 The following code chunks filter the data down to the homicides that are unsolved and run a proportion test to determine the proportion of homicides that are unsolved in Baltimore, MD specifically.
 
-```{r}
+```{r, message=FALSE}
 aggregate_df =
   homicide_df %>% 
   group_by(city_state) %>% 
@@ -60,7 +60,7 @@ aggregate_df =
   )
 ```
 
-```{r}
+```{r, message=FALSE}
 prop.test(
   aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_unsolved),
   aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_total)) %>% 
@@ -101,7 +101,7 @@ results_df %>%
 
 The data used for this problem contains information on individuals separated in the control or the experimental arms of a study. The individual data is contained in separate csv files. The following code brings the files together into one data frame and tidies the resulting data.
 
-```{r}
+```{r, message=FALSE}
 path_df =
   tibble(
     path = list.files("lda-data/")
@@ -139,7 +139,7 @@ Drawing from the above plot, the control group appears to have fairly stable obs
 
 ## Problem 3
 
-
+In the following code chunk, a function is created in which there is a tibble with a normal distribution created and a ttest function is included to be applied to the following code that uses the funciton.
 
 ```{r}
 sim_hyp_test = function(sampsize = 30, mu, sigma = 5){
@@ -153,8 +153,12 @@ sim_hyp_test = function(sampsize = 30, mu, sigma = 5){
     t.test() %>% 
     broom::tidy()
 }
+```
 
 
+The below code forms a list using the function from above, runs a simulation, and binds the rows of the output together. The simulation is run 5000 times for the mu value of 0.
+
+```{r}
 output = vector("list", 5000)
 
 for (i in 1:5000) {
@@ -162,9 +166,12 @@ for (i in 1:5000) {
 }
 
 sim_results = bind_rows(output)
+```
 
 
+The following code uses the function and the simulation that were created and run in the above two code chunks to run another simulation and create a data frame for the ttest function when mu includes the values of 0 through 6. The resulting data frame has 5000 rows for each of the mu values and contains a variable for the estimate of mu for each sample, named `mu_hat` in the data frame.
 
+```{r}
 sim_results = 
   tibble(mu = c(0, 1, 2, 3, 4, 5, 6)) %>% 
   mutate(
@@ -174,45 +181,32 @@ sim_results =
   unnest(estimate_dfs) %>% 
   mutate(mu_hat = estimate) %>% 
   select(-estimate)
-
-prop = function(x){
-  if ()
-}
-
-
-z_scores = function(x) {
-  
-  if (!is.numeric(x)) {
-    stop("Argument x should be numeric")
-  } else if (length(x) == 1) {
-    stop("Z scores cannot be computed for length 1 vectors")
-  }
-  
-  z = mean(x) / sd(x)
-  
-  z
-}
-
-
-sim_results %>% 
-  mutate(
-    rejected_null = case_when(
-      p.value <= 0.05 ~ "reject",
-      p.value > 0.05 ~ "not reject")) %>% 
-  group_by(mu) %>% 
-  summarize(
-    prop_rejected = nrow([rejected_null=="reject"])) / 
-  )
-    prop_rejected = count(rejected_null=="reject"))  / nrow()) %>% 
-  ggplot(aes(x = mu, y = rejected_null)) + 
-  geom_point()
-
-
 ```
 
 
+The following code creates a plot showing the relationship between the true value of mu and the proportion of times the null was rejected, or the power of the test.
 
-```{r}
+```{r, message=FALSE}
+sim_results %>% 
+  mutate(
+    rejected_null = case_when(
+      p.value <= 0.05 ~ "yes",
+      p.value > 0.05 ~ "no")) %>% 
+  group_by(mu, rejected_null) %>% 
+  filter(rejected_null == "yes") %>% 
+  count(rejected_null) %>%
+  summarise(
+    proportion_rejected = sum(n)/5000) %>% 
+   ggplot(aes(x = mu, y = proportion_rejected)) + 
+   geom_smooth(se = FALSE)
+```
+
+Given the above plot, it can be determined that as the true value of mu increases, the power also increases until mu = 3 and then it plateaus. Therefore, the power of the tests increase until mu = 3 and then remains about the same until starting to decrease slightly at mu = 6.
+
+
+The following code creates to plots and binds them together. The first plot, shown on the left, displays the relationship between the true value of mu and the average estimate of mu. The second plot, shown on the right, displays the relationship between the true value of mu and the average estimate of mu for samples only where the null was rejected.
+
+```{r, message=FALSE}
 average_mu_plot = 
   sim_results %>% 
   group_by(mu) %>% 
@@ -220,7 +214,9 @@ average_mu_plot =
     average_mu_hat = mean(mu_hat)
   ) %>% 
   ggplot(aes(x = mu, y = average_mu_hat)) +
-  geom_point()
+  ggtitle("Average Estimates") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_smooth(se = FALSE)
 
 average_reject_mu_plot =
   sim_results %>% 
@@ -230,20 +226,11 @@ average_reject_mu_plot =
     average_mu_hat = mean(mu_hat)
   ) %>% 
   ggplot(aes(x = mu, y = average_mu_hat)) +
-  geom_point()
+  ggtitle("Average Estimates Rejected") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_smooth(se = FALSE)
 
 average_mu_plot + average_reject_mu_plot
 ```
 
-
-
-```{r}
-
-```
-
-
-
-```{r}
-
-```
-
+Given the above plots, it can be determined that the average sample values of mu for only the samples in which the null was rejected (shown on the right) is not exactly the same as the overall average estimates of mu (shown on the left). There are visable deviations from the average estimates when only the samples where the null was rejected were included at mu = 0, 1, 2, and 3.  The average estimates for only the samples where the null is rejected are slightly higher, excluding when mu = 4, 5, and 6.
