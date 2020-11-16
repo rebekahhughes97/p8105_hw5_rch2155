@@ -7,6 +7,7 @@ output: github_document
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(patchwork)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -149,11 +150,9 @@ sim_hyp_test = function(sampsize = 30, mu, sigma = 5){
     )
   
   sim_data %>% 
-    summarize(
-     ttest = broom::tidy(t.test(x)))
+    t.test() %>% 
+    broom::tidy()
 }
-
-
 
 
 output = vector("list", 5000)
@@ -173,24 +172,67 @@ sim_results =
     estimate_dfs = map(output_lists, bind_rows)) %>% 
   select(-output_lists) %>% 
   unnest(estimate_dfs) %>% 
-  mutate(mu_hat = ttest.estimate)
+  mutate(mu_hat = estimate) %>% 
+  select(-estimate)
 
+prop = function(x){
+  if ()
+}
+
+
+z_scores = function(x) {
+  
+  if (!is.numeric(x)) {
+    stop("Argument x should be numeric")
+  } else if (length(x) == 1) {
+    stop("Z scores cannot be computed for length 1 vectors")
+  }
+  
+  z = mean(x) / sd(x)
+  
+  z
+}
 
 
 sim_results %>% 
   mutate(
-    
-    prop_reject = 
+    rejected_null = case_when(
+      p.value <= 0.05 ~ "reject",
+      p.value > 0.05 ~ "not reject")) %>% 
+  group_by(mu) %>% 
+  summarize(
+    prop_rejected = nrow([rejected_null=="reject"])) / 
   )
-  ggplot(aes(x = mu, y = mu_hat, fill = sample_size)) + 
-  geom_violin()
+    prop_rejected = count(rejected_null=="reject"))  / nrow()) %>% 
+  ggplot(aes(x = mu, y = rejected_null)) + 
+  geom_point()
+
 
 ```
 
 
 
 ```{r}
+average_mu_plot = 
+  sim_results %>% 
+  group_by(mu) %>% 
+  summarize(
+    average_mu_hat = mean(mu_hat)
+  ) %>% 
+  ggplot(aes(x = mu, y = average_mu_hat)) +
+  geom_point()
 
+average_reject_mu_plot =
+  sim_results %>% 
+  filter(p.value <= 0.05) %>% 
+  group_by(mu) %>% 
+  summarize(
+    average_mu_hat = mean(mu_hat)
+  ) %>% 
+  ggplot(aes(x = mu, y = average_mu_hat)) +
+  geom_point()
+
+average_mu_plot + average_reject_mu_plot
 ```
 
 
